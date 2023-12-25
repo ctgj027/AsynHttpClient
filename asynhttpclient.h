@@ -48,8 +48,9 @@ public:
      * 
      * @param url The URL for the GET request.
      * @param httprequest A pointer to the CTLHttpRequest object containing request details.
+     * @return int The return value indicates the result of adding the request.
      */
-    void addGetRequest(const std::string& url, CTLHttpRequest* &httprequest);
+    int addGetRequest(const std::string& url, CTLHttpRequest* &httprequest);
 
     /**
      * @brief Adds a POST request to the client.
@@ -58,8 +59,9 @@ public:
      * @param postData The data to be posted.
      * @param httprequest A pointer to the CTLHttpRequest object containing request details.
      * @param httpRetCallBack A pointer to the CHttpRetCallBack object for handling response callbacks.
+     * @return int The return value indicates the result of adding the request.
      */
-    void addPostRequest(const std::string& url, const std::string& postData, CTLHttpRequest* httprequest, CHttpRetCallBack* httpRetCallBack);
+    int addPostRequest(const std::string& url, const std::string& postData, CTLHttpRequest* httprequest, CHttpRetCallBack* httpRetCallBack);
 
     
 
@@ -73,12 +75,12 @@ private:
         CHttpRetCallBack* httpRetCallBack;
     };
 
-    CURLM* multiHandle;
-    typedef std::map<CURL*, CallbackData*> CurlMap;
-    CurlMap curlRequestHandles;
-    CurlMap curlResponseHandles;
-    std::mutex curlHandlesMutex; // 用于保护 curlHandles
-    std::thread requestThread;
-    bool isRunning;
+    CURLM* multiHandle;                                // 用于管理多个并发的 CURL 请求
+    typedef std::map<CURL*, CallbackData*> CurlMap;    // 用于将 CURL 句柄关联到回调数据
+    CurlMap curlRequestHandles;                        // 存储待处理的 CURL 请求及其关联的回调数据
+    CurlMap curlResponseHandles;                       // 存储已发送的 CURL 请求及其关联的回调数据，等待处理响应
+    std::mutex curlHandlesMutex;                       // 用于保护对 curlRequestHandles 和 curlResponseHandles 的访问，确保线程安全
+    std::thread requestThread;                         // 用于处理 HTTP 请求的独立线程
+    bool isRunning;                                    // 用于指示请求处理线程是否应继续运行
 };
 #endif // ASYN_HTTP_CLIENT_H
