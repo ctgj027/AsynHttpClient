@@ -38,11 +38,11 @@ AsynHttpClient::stopRequestThread() {
     curl_global_cleanup();
 }
 
-void AsynHttpClient::addGetRequest(const std::string& url, CTLHttpRequest* &httprequest) {
+int AsynHttpClient::addGetRequest(const std::string& url, CTLHttpRequest* &httprequest) {
     std::lock_guard<std::mutex> lock(curl_handles_mutex); // 确保线程安全
     CURL* curl = curl_easy_init();
     if (!curl) {
-        throw std::runtime_error("Failed to initialize CURL easy handle");
+        return CURL_ADD_FAIL;
     } else {
         curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeCallback);
@@ -50,13 +50,14 @@ void AsynHttpClient::addGetRequest(const std::string& url, CTLHttpRequest* &http
         curl_handles.insert({curl, httprequest});
         curl_multi_add_handle(multiHandle, curl);
     }
+    return CURL_ADD_SUCCESS;
 }
 
-void AsynHttpClient::addPostRequest(const std::string& url, const std::string& postData, CTLHttpRequest* httprequest, CHttpRetCallBack* httpRetCallBack) {
+int AsynHttpClient::addPostRequest(const std::string& url, const std::string& postData, CTLHttpRequest* httprequest, CHttpRetCallBack* httpRetCallBack) {
     
     CURL* curl = curl_easy_init();
     if (!curl) {
-        throw std::runtime_error("Failed to initialize CURL easy handle");
+        return CURL_ADD_FAIL;
     } else {
         CallbackData* callbackdata = new CallbackData();
         callbackdata->httprequest = httprequest;
@@ -73,6 +74,7 @@ void AsynHttpClient::addPostRequest(const std::string& url, const std::string& p
         std::lock_guard<std::mutex> lock(curlHandlesMutex); // 确保线程安全
         curlRequestHandles.insert({curl, callbackdata});
     }
+    return CURL_ADD_SUCCESS;
 }
 
 void AsynHttpClient::performRequests() {
