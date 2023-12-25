@@ -10,7 +10,7 @@ class CHttpRetCallBack;
 class CTLHttpRequest;
 
 /**
- * @class HttpClient
+ * @class AsynHttpClient
  * @brief HTTP Client for handling asynchronous HTTP requests.
  *
  * This class provides functionality for sending asynchronous HTTP GET and POST requests
